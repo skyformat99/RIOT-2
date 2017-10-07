@@ -1,0 +1,8 @@
+
+USEMODULE += newlib_nano
+
+export USEMODULE += periph_fe310
+export USEMODULE += periph_fe310_sifive
+export USEMODULE += newlib_syscalls_fe310
+
+include $(RIOTMAKE)/arch/riscv.inc.mk
