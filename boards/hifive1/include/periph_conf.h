@@ -26,6 +26,16 @@
 extern "C" {
 #endif
 
+
+/**
+ * @name    Core Clock configuration
+ * @{
+ */
+#define CLOCK_CORECLOCK     		(1600000U)
+//#define CLOCK_CORECLOCK     		(20000000U)
+//#define CLOCK_CORECLOCK     		(38400000U)
+
+
 /**
  * @name    Xtimer configuration
  * @{

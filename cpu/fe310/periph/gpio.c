@@ -50,16 +50,16 @@ void	gpio_isr(int num)
 	//	Clear interupt
     switch(isr_flank[pin]) {
         case GPIO_FALLING:
-        	GPIO_REG(GPIO_FALL_IP) = (1 << pin);
+        	GPIO_REG(GPIO_FALL_IP) |= (1 << pin);
             break;
 
         case GPIO_RISING:
-        	GPIO_REG(GPIO_RISE_IP) = (1 << pin);
+        	GPIO_REG(GPIO_RISE_IP) |= (1 << pin);
             break;
 
         case GPIO_BOTH:
-        	GPIO_REG(GPIO_FALL_IP) = (1 << pin);
-        	GPIO_REG(GPIO_RISE_IP) = (1 << pin);
+        	GPIO_REG(GPIO_FALL_IP) |= (1 << pin);
+        	GPIO_REG(GPIO_RISE_IP) |= (1 << pin);
             break;
     }
 }
@@ -75,21 +75,30 @@ int gpio_init(gpio_t pin, gpio_mode_t mode)
     // 	Configure the mode
     switch(mode) {
         case GPIO_IN:
-        	GPIO_REG(GPIO_INPUT_EN) = (1 << pin);
+        	GPIO_REG(GPIO_INPUT_EN)  |= (1 << pin);
+        	GPIO_REG(GPIO_OUTPUT_EN) &= ~(1 << pin);
+        	GPIO_REG(GPIO_PULLUP_EN) &= ~(1 << pin);
             break;
 
         case GPIO_IN_PU:
-        	GPIO_REG(GPIO_INPUT_EN) = (1 << pin);
-        	GPIO_REG(GPIO_PULLUP_EN) = (1 << pin);
+        	GPIO_REG(GPIO_INPUT_EN)  |= (1 << pin);
+        	GPIO_REG(GPIO_OUTPUT_EN) &= ~(1 << pin);
+        	GPIO_REG(GPIO_PULLUP_EN) |= (1 << pin);
             break;
 
         case GPIO_OUT:
-        	GPIO_REG(GPIO_OUTPUT_EN) = (1 << pin);
+        	GPIO_REG(GPIO_INPUT_EN)  &= ~(1 << pin);
+        	GPIO_REG(GPIO_OUTPUT_EN) |= (1 << pin);
+        	GPIO_REG(GPIO_PULLUP_EN) &= ~(1 << pin);
             break;
 
         default:
             return -1;
     }
+
+    //	Configure the pin muxing for the GPIO
+    GPIO_REG(GPIO_IOF_EN) 	&= ~(1 << pin);
+    GPIO_REG(GPIO_IOF_SEL)  &= ~(1 << pin);
 
     return 0;
 }
@@ -134,16 +143,16 @@ void gpio_irq_enable(gpio_t pin)
 	//	Enable interupt for pin
     switch(isr_flank[pin]) {
         case GPIO_FALLING:
-        	GPIO_REG(GPIO_FALL_IE) = (1 << pin);
+        	GPIO_REG(GPIO_FALL_IE) |= (1 << pin);
             break;
 
         case GPIO_RISING:
-        	GPIO_REG(GPIO_RISE_IE) = (1 << pin);
+        	GPIO_REG(GPIO_RISE_IE) |= (1 << pin);
             break;
 
         case GPIO_BOTH:
-        	GPIO_REG(GPIO_FALL_IE) = (1 << pin);
-        	GPIO_REG(GPIO_RISE_IE) = (1 << pin);
+        	GPIO_REG(GPIO_FALL_IE) |= (1 << pin);
+        	GPIO_REG(GPIO_RISE_IE) |= (1 << pin);
             break;
 
         default:
