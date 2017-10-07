@@ -45,6 +45,14 @@ extern "C" {
 #define TIMER_NUMOF         		(1)
 
 /**
+ * @name    GPIO configuration
+ *
+ * @{
+ */
+#define GPIO_INTR_PRIORITY			(3)
+/** @} */
+
+/**
  * @name    UART configuration
  *
  * @{
