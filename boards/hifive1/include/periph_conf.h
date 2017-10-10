@@ -31,9 +31,11 @@ extern "C" {
  * @name    Core Clock configuration
  * @{
  */
-#define CLOCK_CORECLOCK     		(1600000U)
-//#define CLOCK_CORECLOCK     		(20000000U)
-//#define CLOCK_CORECLOCK     		(38400000U)
+#define CLOCK_CORECLOCK     		(1600000ul)
+//#define CLOCK_CORECLOCK     		(20000000ul)
+//#define CLOCK_CORECLOCK     		(27000000ul)
+//#define CLOCK_CORECLOCK     		(38400000ul)
+/** @} */
 
 
 /**
@@ -53,6 +55,20 @@ extern "C" {
  * @{
  */
 #define TIMER_NUMOF         		(1)
+/** @} */
+
+/**
+ * @name    RTT/RTC configuration
+ *
+ * @{
+ */
+#define RTT_NUMOF         			(1)
+#define RTT_FREQUENCY       		(1)             /* in Hz */
+#define RTT_MAX_VALUE       		(0xFFFFFFFF)
+#define RTT_INTR_PRIORITY			(2)
+
+#define	RTC_NUMOF					(1)
+/** @} */
 
 /**
  * @name    GPIO configuration

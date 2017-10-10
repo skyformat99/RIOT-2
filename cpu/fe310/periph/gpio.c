@@ -38,7 +38,7 @@ static gpio_flank_t		isr_flank[GPIO_NUMOF];
 static gpio_isr_ctx_t 	isr_ctx[GPIO_NUMOF];
 
 
-void	gpio_isr(int num)
+void gpio_isr(int num)
 {
 	uint32_t pin = num - INT_GPIO_BASE;
 
