@@ -11,12 +11,12 @@
  * @{
  *
  * @file
- * @brief   Ethernet adaption for @ref net_gnrc_netif2
+ * @brief   IEEE 802.15.4 adaption for @ref net_gnrc_netif2
  *
- * @author  Martine Lenders <mlenders@inf.fu-berlin.de>
+ * @author  Martine Lenders <m.lenders@fu-berlin.de>
  */
-#ifndef NET_GNRC_NETIF2_ETHERNET_H
-#define NET_GNRC_NETIF2_ETHERNET_H
+#ifndef NET_GNRC_NETIF2_IEEE802154_H
+#define NET_GNRC_NETIF2_IEEE802154_H
 
 #include "net/gnrc/netif2.h"
 
@@ -25,28 +25,26 @@ extern "C" {
 #endif
 
 /**
- * @brief   Creates an Ethernet network interface
+ * @brief   Creates an IEEE 802.15.4 network interface
  *
  * @param[in] stack     The stack for the network interface's thread.
  * @param[in] stacksize Size of @p stack.
  * @param[in] priority  Priority for the network interface's thread.
  * @param[in] name      Name for the network interface. May be NULL.
- * @param[in] dev       Device for the interface.
+ * @param[in] dev       Device for the interface
  *
  * @see @ref gnrc_netif2_create()
  *
- * @attention   Fails and crashes (assertion error with @ref DEVELHELP or
- *              segmentation fault without) if `GNRC_NETIF_NUMOF` is lower than
- *              the number of calls to this function.
- *
  * @return  The network interface on success.
+ * @return  NULL, on error.
  */
-gnrc_netif2_t *gnrc_netif2_ethernet_create(char *stack, int stacksize, char priority,
-                                           char *name, netdev_t *dev);
+gnrc_netif2_t *gnrc_netif2_ieee802154_create(char *stack, int stacksize,
+                                             char priority, char *name,
+                                             netdev_t *dev);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NET_GNRC_NETIF2_ETHERNET_H */
+#endif /* NET_GNRC_NETIF2_IEEE802154_H */
 /** @} */
