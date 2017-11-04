@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017	Ken Rabold
  *
+ *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
@@ -26,7 +27,9 @@
 #include "thread.h"
 #include "irq.h"
 #include "cpu.h"
+#include "context_frame.h"
 #include "periph_cpu.h"
+#include "panic.h"
 #include "sifive/encoding.h"
 #include "sifive/platform.h"
 #include "sifive/plic_driver.h"
@@ -145,26 +148,16 @@ void external_isr(void) {
 /**
  * @brief Global trap and interrupt handler
  */
-void handle_trap(unsigned int mcause, unsigned int epc, unsigned int sp,
-		unsigned int mstatus) {
+void handle_trap(unsigned int mcause)
+{
+	//  Tell RIOT to set sched_context_switch_request instead of
+	//  calling thread_yield().
 	__in_isr = 1;
 
 	//	Check for INT or TRAP
 	if ((mcause & MCAUSE_INT) == MCAUSE_INT) {
 		//	Cause is an interrupt - determine type
-		switch (mcause & MCAUSE_CAUSE) {
-		case IRQ_M_SOFT:
-			//	Software interrupt
-			clear_csr(mie, MIP_MSIP);
-			CLINT_REG(CLINT_MSIP) = 0;
-
-			//	Perform context switch
-			sched_context_switch_request = 1;
-
-			//	Reset interrupt
-			set_csr(mie, MIP_MSIP);
-			break;
-
+		switch(mcause & MCAUSE_CAUSE) {
 		case IRQ_M_TIMER:
 			//	Handle timer interrupt
 			timer_isr();
@@ -177,17 +170,13 @@ void handle_trap(unsigned int mcause, unsigned int epc, unsigned int sp,
 
 		default:
 			//	Unknown interrupt
+			core_panic(PANIC_GENERAL_ERROR, "Unhandled interrupt");
 			break;
 		}
 	}
 
-	//	Check for a context switch
-	if (sched_context_switch_request) {
-		sched_run();
-	}
-
-	//	ISR done
-	__in_isr = 0;
+    //	ISR done - no more changes to thread states
+    __in_isr = 0;
 }
 
 /**
@@ -198,40 +187,82 @@ void handle_trap(unsigned int mcause, unsigned int epc, unsigned int sp,
  */
 #define STACK_MARKER                (0x77777777)
 
-char *thread_arch_stack_init(thread_task_func_t task_func, void *arg,
-		void *stack_start, int stack_size) {
-	uint32_t *stk, *stkFrame;
+/**
+ * @brief Initialize a thread's stack
+ *
+ * RIOT saves the tasks registers on the stack, not in the task control
+ * block.  thread_arch_stack_init() is responsible for allocating space for
+ * the registers on the stack and adjusting the stack pointer to account for
+ * the saved registers.
+ *
+ * The stack_start parameter is the bottom of the stack (low address).  The
+ * return value is the top of stack: stack_start + stack_size - space reserved
+ * for thread context save - space reserved to align stack.
+ *
+ * thread_arch_stack_init is called for each thread.
+ *
+ * RISCV ABI is here: https://github.com/riscv/riscv-elf-psabi-doc
+ * From ABI:
+ * The stack grows downwards and the stack pointer shall be aligned to a
+ * 128-bit boundary upon procedure entry, except for the RV32E ABI, where it
+ * need only be aligned to 32 bits. In the standard ABI, the stack pointer
+ * must remain aligned throughout procedure execution. Non-standard ABI code
+ * must realign the stack pointer prior to invoking standard ABI procedures.
+ * The operating system must realign the stack pointer prior to invoking a
+ * signal handler; hence, POSIX signal handlers need not realign the stack
+ * pointer. In systems that service interrupts using the interruptee's stack,
+ * the interrupt service routine must realign the stack pointer if linked
+ * with any code that uses a non-standard stack-alignment discipline, but
+ * need not realign the stack pointer if all code adheres to the standard ABI.
+ *
+ * @param[in] task_func     pointer to the thread's code
+ * @param[in] arg           argument to task_func
+ * @param[in] stack_start   pointer to the start address of the thread
+ * @param[in] stack_size    the maximum size of the stack
+ *
+ * @return                  pointer to the new top of the stack (128bit aligned)
+ *
+ */
+char *thread_arch_stack_init(thread_task_func_t task_func,
+                             void *arg,
+                             void *stack_start,
+                             int stack_size)
+{
+	struct context_switch_frame *sf;
+	uint32_t *reg;
+	uint32_t *stk_top;
 
-	//	Create the initial stack frame for this thread function
-	stk = (uint32_t *) ((uintptr_t) stack_start + stack_size);
+	/* calculate the top of the stack */
+	stk_top = (uint32_t *)((uintptr_t)stack_start + stack_size);
 
-	//	adjust to 32 bit boundary by clearing the last two bits in the address
-	stk = (uint32_t *) (((uint32_t) stk) & ~((uint32_t) 0x3));
+	/* Put a marker at the top of the stack.  This is used by
+	* thread_arch_stack_print to determine where to stop dumping the
+	* stack.
+	*/
+	stk_top--;
+	*stk_top = STACK_MARKER;
 
-	//	stack start marker
-	stk--;
-	*stk = STACK_MARKER;
-	stkFrame = stk;
-	stk -= 34;
+	/* per ABI align stack pointer to 16 byte boundary. */
+	stk_top = (uint32_t *)(((uint32_t)stk_top) & ~((uint32_t)0xf));
 
-	//	set all values of frame to 0
-	for (int i = 0; i < 34; i++)
-		stk[i] = 0;
+	/* reserve space for the stack frame. */
+	stk_top =(uint32_t *)((uint8_t *) stk_top - sizeof(*sf));
 
-	//	set return address (x1 reg = ra) to be the task_exit function
-	stk[1] = (unsigned int) sched_task_exit;
+	/* populate the stack frame with default values for starting the thread. */
+	sf = (struct context_switch_frame *) stk_top;
 
-	//	set stack ptr (x2 reg = sp) to this initial stack frame
-	stk[2] = (unsigned int) stkFrame;
+	/* a7 is register with highest memory address in frame */
+	reg = &sf->a7;
+	while (reg != &sf->pc) {
+	    *reg-- = 0;
+        }
+        sf->pc = (uint32_t) task_func;
+        sf->a0 = (uint32_t) arg;
 
-	//	set a0 to given task args
-	stk[10] = (unsigned int) arg;
+	/* if the thread exits go to sched_task_exit() */
+	sf->ra = (uint32_t) sched_task_exit;
 
-	//	set initial mstatus and mepc
-	stk[32] = (unsigned int) task_func;
-	stk[33] = (unsigned int) (MSTATUS_DEFAULT | MSTATUS_MIE);
-
-	return (char*) stk;
+	return (char *) stk_top;
 }
 
 void thread_arch_stack_print(void) {
@@ -270,11 +301,23 @@ void *thread_arch_isr_stack_start(void) {
 	return NULL;
 }
 
+/**
+ * @brief Start or resume threading by loading a threads initial information
+ * from the stack.
+ *
+ * This is called is two situations: 1) after the initial main and idle threads
+ * have been created and 2) when a thread exits.
+ *
+ * sched_active_thread is not valid when thread_arch_start_threading() is
+ * called.  sched_run() must be called to determine the next valid thread.
+ * This is exploited in the context switch code.
+ */
 void thread_arch_start_threading(void) {
-	//	Initialize threading
-	sched_run();
+	/* enable interrupts */
 	irq_arch_enable();
-	thread_start();
+
+	/* start the thread */
+	thread_arch_yield();
 	UNREACHABLE();
 }
 
