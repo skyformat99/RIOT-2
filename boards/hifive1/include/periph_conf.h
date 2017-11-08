@@ -1,22 +1,21 @@
 /*
- * Copyright (C) 2017
+ * Copyright (C) 2017	Ken Rabold
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License v2.1. See the file LICENSE in the top level directory for more
  * details.
  */
 
-
 /**
- * @defgroup    boards_hifive HiFive
+ * @defgroup    boards_hifive HiFive1
  * @ingroup     boards
- * @brief       Support for the HiFive RISC-V board
+ * @brief       Support for the HiFive1 RISC-V board
  * @{
  *
  * @file
- * @brief       Peripheral specific definitions for the HiFive RISC-V board
+ * @brief       Peripheral specific definitions for the HiFive1 RISC-V board
  *
- * @author      Ken Rabold <kenrabold@hotmail.com>
+ * @author      Ken Rabold
  */
 
 #ifndef PERIPH_CONF_H
@@ -25,7 +24,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /**
  * @name    Core Clock configuration
@@ -37,7 +35,6 @@ extern "C" {
 //#define CLOCK_CORECLOCK     		(38400000ul)
 /** @} */
 
-
 /**
  * @name    Xtimer configuration
  * @{
@@ -47,7 +44,6 @@ extern "C" {
 #define XTIMER_WIDTH                (32)
 #define XTIMER_HZ					(32768ul)
 /** @} */
-
 
 /**
  * @name    Timer configuration
@@ -79,6 +75,14 @@ extern "C" {
 /** @} */
 
 /**
+ * @name    PWM configuration
+ *
+ * @{
+ */
+#define PWM_NUMOF					(3)
+/** @} */
+
+/**
  * @name    UART configuration
  *
  * @{
@@ -87,8 +91,6 @@ extern "C" {
 #define UART0_RX_INTR_PRIORITY		(2)
 #define UART1_RX_INTR_PRIORITY		(2)
 /** @} */
-
-
 
 #ifdef __cplusplus
 }

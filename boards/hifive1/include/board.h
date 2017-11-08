@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017
+ * Copyright (C) 2017	Ken Rabold
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -9,20 +9,19 @@
 /**
  * @defgroup    boards_hifive
  * @ingroup     boards
- * @brief       Support for the HiFive RISC-V board
+ * @brief       Support for the HiFive1 RISC-V board
  * @{
  *
  * @file
- * @brief       Board specific definitions for the HiFive RISC-V board
+ * @brief       Board specific definitions for the HiFive1 RISC-V board
  *
- * @author      Ken Rabold <kenrabold@hotmail.com>
+ * @author      Ken Rabold
  */
 
 #ifndef BOARD_H
 #define BOARD_H
 
 #include "periph/gpio.h"
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,12 +47,10 @@ extern "C" {
 #define LED2_OFF            gpio_set(LED2_PIN)
 #define LED2_TOGGLE         gpio_toggle(LED2_PIN)
 
-
 /**
  * @brief   Initialize board specific hardware, including clock, LEDs and std-IO
  */
 void board_init(void);
-
 
 #ifdef __cplusplus
 }

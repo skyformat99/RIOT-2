@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017
+ * Copyright (C) 2017	Ken Rabold
  *
  * This file is subject to the terms and conditions of the GNU Lesser General
  * Public License v2.1. See the file LICENSE in the top level directory for more
@@ -15,7 +15,7 @@
  * @file
  * @brief           CPU specific configuration options
  *
- * @author          Ken Rabold <kenrabold@hotmail.com>
+ * @author          Ken Rabold
  */
 
 #ifndef CPU_CONF_H
@@ -31,12 +31,9 @@
 #define THREAD_STACKSIZE_IDLE           (256)
 #endif
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
 
 #ifdef __cplusplus
 }

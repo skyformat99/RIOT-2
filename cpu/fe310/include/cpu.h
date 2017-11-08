@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017
+ * Copyright (C) 2017	Ken Rabold
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -25,11 +25,9 @@
 #ifndef CPU_H
 #define CPU_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /**
  * @brief   Initialization of the CPU
@@ -41,18 +39,14 @@ void cpu_init(void);
  *
  * @todo:   Not supported
  */
-static inline void cpu_print_last_instruction(void)
-{
-    /* This function must exist else RIOT won't compile */
+static inline void cpu_print_last_instruction(void) {
+	/* This function must exist else RIOT won't compile */
 }
 
 /**
  * @brief   Initialization of the Newlib-nano stub
  */
 void nanostubs_init(void);
-
-
-
 
 #ifdef __cplusplus
 }

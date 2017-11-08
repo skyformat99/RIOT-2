@@ -1,5 +1,5 @@
 /*
- * Copyright 2017
+ * Copyright 2017	Ken Rabold
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -13,7 +13,7 @@
  * @file        cpuid.c
  * @brief       Low-level CPUID driver implementation
  *
- * @author
+ * @author		Ken Rabold
  * @}
  */
 
@@ -25,15 +25,13 @@
 #include "sifive/encoding.h"
 #include "sifive/platform.h"
 
+void cpuid_get(void *id) {
+	uint32_t result[5];
 
-void cpuid_get(void *id)
-{
-    uint32_t	result[5];
+	//	Read RISC-V CSRs for CPU ID
+	result[0] = read_csr(mvendorid);
+	result[1] = read_csr(marchid);
+	result[2] = read_csr(mimpid);
 
-    //	Read RISC-V CSRs for CPU ID
-    result[0] = read_csr(mvendorid);
-    result[1] = read_csr(marchid);
-    result[2] = read_csr(mimpid);
-
-    memcpy(id, &result[0], CPUID_LEN);
+	memcpy(id, &result[0], CPUID_LEN);
 }
