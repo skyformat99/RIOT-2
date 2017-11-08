@@ -1,3 +1,3 @@
-MODULE = periph_fe310_sifive
+MODULE = sifive_drivers_fe310
 
 include $(RIOTBASE)/Makefile.base
